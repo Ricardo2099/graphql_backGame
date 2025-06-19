@@ -12,11 +12,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get(
     'SECRET_KEY',
     'replace-this-for-development-only'
-)  # En Render inyectarás SECRET_KEY real
+)  # En Render deberás inyectar SECRET_KEY real vía variables de entorno
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-# Hosts permitidos (en Render pon tu dominio, por ejemplo "mi-app.onrender.com")
+# Hosts permitidos (en Render pon tu dominio: "tu-app.onrender.com")
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 
 # ─── APPS & MIDDLEWARE ─────────────────────────────────────────────────────────
@@ -59,7 +59,7 @@ ROOT_URLCONF = 'gameforum_api.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],  # añade rutas si tienes templates
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -75,17 +75,24 @@ TEMPLATES = [
 WSGI_APPLICATION = 'gameforum_api.wsgi.application'
 
 # ─── BASE DE DATOS ──────────────────────────────────────────────────────────────
-DATABASE_URL = os.environ.get(
-    'DATABASE_URL',
-    'postgresql://vg_user:123456@localhost:5432/vg_forum'
-)
-DATABASES = {
-    'default': dj_database_url.config(
-        default=DATABASE_URL,
-        conn_max_age=600,
-        ssl_require=not DEBUG,   # en producción Aiven generalmente requiere TLS
-    )
-}
+# En local (DEBUG=True) y sin DATABASE_URL, usar SQLite:
+if DEBUG and not os.environ.get('DATABASE_URL'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+else:
+    # En producción o cuando tengo DATABASE_URL:
+    DATABASE_URL = os.environ['DATABASE_URL']
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=not DEBUG,  # Aiven exige TLS en producción
+        )
+    }
 
 # ─── PASSWORDS & LOCALIZACIÓN ──────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
@@ -96,18 +103,16 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
-USE_I18N = True
-USE_TZ = True
+TIME_ZONE     = 'UTC'
+USE_I18N      = True
+USE_TZ        = True
 
 # ─── STATIC & MEDIA ─────────────────────────────────────────────────────────────
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-
-# WhiteNoise Storage: comprime + cachea
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-MEDIA_URL = '/media/'
+MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # ─── GRAPHENE & CORS ────────────────────────────────────────────────────────────
@@ -127,5 +132,4 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
