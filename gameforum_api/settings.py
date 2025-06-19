@@ -8,10 +8,16 @@ import graphene_file_upload.scalars
 # ─── BASE ───────────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ['SECRET_KEY']  # ← define en Render
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+# Seguridad
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+    'replace-this-for-development-only'
+)  # En Render inyectarás SECRET_KEY real
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')  # ← p.ej. "tu-app.onrender.com"
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+
+# Hosts permitidos (en Render pon tu dominio, por ejemplo "mi-app.onrender.com")
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 
 # ─── APPS & MIDDLEWARE ─────────────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -28,7 +34,7 @@ INSTALLED_APPS = [
 
     # GraphQL + JWT + Uploads
     'graphene_django',
-    'graphql_jwt.refresh_token',           # si usas refresh tokens
+    'graphql_jwt.refresh_token',       # si usas refresh tokens
     'graphene_file_upload.django',
 
     # Tu app
@@ -38,7 +44,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # ← sirve static via WhiteNoise
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # sirve static con WhiteNoise
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -69,27 +75,30 @@ TEMPLATES = [
 WSGI_APPLICATION = 'gameforum_api.wsgi.application'
 
 # ─── BASE DE DATOS ──────────────────────────────────────────────────────────────
-DATABASE_URL = os.environ['DATABASE_URL']
+DATABASE_URL = os.environ.get(
+    'DATABASE_URL',
+    'postgresql://vg_user:123456@localhost:5432/vg_forum'
+)
 DATABASES = {
     'default': dj_database_url.config(
         default=DATABASE_URL,
         conn_max_age=600,
-        ssl_require=True,   # Aiven suele requerir TLS
+        ssl_require=not DEBUG,   # en producción Aiven generalmente requiere TLS
     )
 }
 
 # ─── PASSWORDS & LOCALIZACIÓN ──────────────────────────────────────────────────
 AUTH_PASSWORD_VALIDATORS = [
-    {'NAME':'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME':'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME':'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME':'django.contrib.auth.password_validation.NumericPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE     = 'UTC'
-USE_I18N      = True
-USE_TZ        = True
+TIME_ZONE = 'UTC'
+USE_I18N = True
+USE_TZ = True
 
 # ─── STATIC & MEDIA ─────────────────────────────────────────────────────────────
 STATIC_URL = '/static/'
@@ -98,7 +107,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # WhiteNoise Storage: comprime + cachea
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-MEDIA_URL  = '/media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # ─── GRAPHENE & CORS ────────────────────────────────────────────────────────────
