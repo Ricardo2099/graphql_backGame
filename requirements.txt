@@ -1,9 +1,9 @@
-Django>=4.0
+Django>=5.2.3
 graphene-django>=3.2
-django-graphql-jwt>=0.3.0
+django-graphql-jwt>=0.4
 psycopg2-binary>=2.9
-dj-database-url>=1.0
-django-cors-headers>=3.13
+dj-database-url>=3.0
+django-cors-headers>=4.7
+graphene-file-upload==1.3.0       # <-- versión compatible
 gunicorn
-graphene-file-upload==1.3.0
-
+whitenoise                       # <-- para servir estáticos
